@@ -1,4 +1,5 @@
 https://doi.org/10.5281/zenodo.19045363
+https://orcid.org/my-orcid?orcid=0009-0004-1872-1153
 # GRA Ramanujan Playground
 
 Evolutionary formula discovery with **GRA Meta-Nullification**.
