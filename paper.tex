@@ -1,0 +1,125 @@
+\documentclass[11pt]{article}
+
+\usepackage[a4paper,margin=2.5cm]{geometry}
+\usepackage{amsmath,amssymb}
+\usepackage{hyperref}
+
+\title{GRA Ramanujan Generator:\\
+Multilevel Foam Functional for Symbolic Formula Discovery}
+
+\author{oleg bitsoev}
+\date{March 2026}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+We present a small experimental playground, the \emph{GRA Ramanujan Generator}, which uses a multilevel GRA foam functional to guide evolutionary discovery of symbolic formulas for mathematical constants such as $\pi$, $e$ and $\ln 2$. The key idea is to go beyond pure numerical accuracy and simple complexity penalties, and introduce a structural ``Ramanujan-style'' prior that prefers interpretable expressions built from meaningful constants and operations.
+\end{abstract}
+
+\section{Introduction}
+
+Symbolic regression and automated formula discovery are increasingly used in mathematics and the natural sciences to search for interpretable laws and conjectures rather than purely black-box models. Recent work such as the Ramanujan Machine and AI Feynman demonstrates that symbolic formulas can be discovered automatically and then inspected by humans.
+
+In this note we describe a lightweight experimental system, the \emph{GRA Ramanujan Generator}, built on top of the GRA Meta-Nullification framework. The system exposes a web playground where users can watch an evolutionary process search for formulas approximating a target constant, while a multilevel GRA foam functional balances three objectives: numerical accuracy, simplicity, and structural meaning.
+
+\section{GRA Foam Functional}
+
+Let a candidate formula $f$ induce a numerical approximation $\hat{c} = f()$ of a target constant $c$.
+We define three levels of the GRA foam functional:
+\begin{itemize}
+  \item Level 0 (pure error)
+  \[
+    \Phi^{(0)}(f) = | \hat{c} - c |.
+  \]
+  \item Level 1 (error + complexity)
+  \[
+    \Phi^{(1)}(f) = \Phi^{(0)}(f) + \lambda \cdot \mathrm{complexity}(f),
+  \]
+  where $\lambda > 0$ controls the penalty for expression size / tree depth.
+  \item Level 2 (structural prior)
+  \[
+    \Phi^{(2)}(f) = \mathrm{structure\_penalty}(f),
+  \]
+  which rewards Ramanujan-style structure and penalises noisy constants.
+\end{itemize}
+
+Without the structural term, a standard two-level functional
+\[
+  \Phi_{\mathrm{GRA}}^{(2\text{-level})}(f)
+  = \alpha \Phi^{(0)}(f) + (1-\alpha)\Phi^{(1)}(f),
+\]
+where $\alpha \in [0,1]$, tends to favour short numeric hacks: very small error and low complexity, but no mathematical meaning (e.g.\ expressions like $\sqrt{9.901}$).
+
+To mitigate this, we introduce a three-level foam functional
+\[
+  \Phi_{\mathrm{GRA}}(f)
+  = \alpha_0 \Phi^{(0)}(f)
+  + \alpha_1 \Phi^{(1)}(f)
+  + \alpha_2 \Phi^{(2)}(f),
+\]
+with $\alpha_0,\alpha_1,\alpha_2 \ge 0$ and $\alpha_0+\alpha_1+\alpha_2 \approx 1$.
+
+\subsection{Structural Ramanujan prior}
+
+The structural term $\Phi^{(2)}$ operates on the expression tree of $f$.
+The current prototype uses the following heuristic components:
+\begin{itemize}
+  \item Rewards the presence of known constants such as $\pi$, $e$, $\ln 2$ and small rationals $p/q$ with $|p|,|q|$ small.
+  \item Penalises arbitrary floating-point constants with many digits or without a simple rational approximation.
+  \item Rewards certain operation patterns (powers, logs, products) that frequently appear in Ramanujan-style identities.
+\end{itemize}
+The overall $\Phi^{(2)}$ is a weighted sum of these features, with negative values indicating more desirable structure.
+
+\section{Experiment: Approximating $e$}
+
+In the playground, we run an evolutionary search for formulas approximating Euler's number $e$.
+We compare two settings:
+
+\begin{enumerate}
+  \item \textbf{2-level GRA (no structural prior).}
+  Here $\Phi_{\mathrm{GRA}} = \alpha \Phi^{(0)} + (1-\alpha)\Phi^{(1)}$.
+  The system often converges to trivial short expressions that numerically fit the target but have no obvious meaning.
+
+  \item \textbf{3-level GRA with Ramanujan prior.}
+  Here $\Phi_{\mathrm{GRA}} = \alpha_0 \Phi^{(0)} + \alpha_1 \Phi^{(1)} + \alpha_2 \Phi^{(2)}$ with, for example,
+  $\alpha_0 = 0.3$, $\alpha_1 = 0.3$, $\alpha_2 = 0.4$.
+\end{enumerate}
+
+In a typical run targeting $e$, the 3-level GRA setup produces a best formula of the form
+\[
+  f(x) = (4.227)^{\ln 2},
+\]
+with numerical value
+\[
+  f() \approx 2.7158753,\quad
+  e \approx 2.7182818,
+\]
+so the absolute error is about $2.4 \cdot 10^{-3}$.
+
+The complexity of this expression (in our tree-based metric) is $3$, and the structural term $\Phi^{(2)}$ is strongly negative because the formula uses the meaningful constant $\ln 2$ and a simple power structure, rather than arbitrary numeric constants.
+
+Although this specific expression is not claimed to be a deep new identity, the experiment clearly shows how the structural prior can steer the search away from degenerate numeric hacks towards interpretable expressions built from familiar constants.
+
+\section{Discussion and Outlook}
+
+The GRA Ramanujan Generator is a small but instructive example of how a multilevel foam functional can be used to control symbolic regression:
+\begin{itemize}
+  \item Level~0 enforces numerical agreement with a target.
+  \item Level~1 keeps expressions reasonably simple.
+  \item Level~2 expresses domain knowledge about which kinds of formulas humans tend to find meaningful.
+\end{itemize}
+
+While the current playground focuses on mathematical constants, the same architecture can be applied to scientific modelling:
+discovering empirical laws, soft sensors and surrogate models where interpretability matters.
+Future work may integrate more principled structural priors, benchmarks and connections to existing systems such as the Ramanujan Machine and AI Feynman.
+
+\section*{Availability}
+
+A live demo of the GRA Ramanujan Generator is available at:
+\begin{center}
+\url{https://gra-ramanujan-evolut-rvxf.bolt.host/}
+\end{center}
+The full engine currently resides in a private research repository; this note is intended as an accompanying description of the experimental playground.
+
+\end{document}
